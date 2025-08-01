@@ -103,7 +103,8 @@ func usercode(data map[string]any) (map[string]any, error) {
 		return nil, fmt.Errorf("command_args must be an array")
 	}
 
-	tmpDir, err := os.MkdirTemp("", "ai-pipe-*")
+	tmpDir := filepath.Join(os.TempDir(), fmt.Sprintf("ai-pipe-%d", time.Now().UnixNano()))
+	err := os.MkdirAll(tmpDir, 0755)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp directory: %v", err)
 	}

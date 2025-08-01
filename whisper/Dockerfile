@@ -11,9 +11,9 @@ RUN apk add --no-cache --virtual .fetch-deps upx
 RUN upx -1 /app/console-tool
 
 
-FROM alpine:3.20
-RUN apk add --no-cache python3 py3-pip ffmpeg
-RUN pip3 install --break-system-packages openai-whisper
+FROM python:3.11-slim
+RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir openai-whisper
 COPY --from=builder /app/console-tool /app/console-tool
 
 RUN addgroup --gid 501 usercode && \
