@@ -75,9 +75,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 // usercode logic
 func usercode(data map[string]any) (map[string]any, error) {
-	commandName, ok := data["command_name"].(string)
+	commandName, ok := data["command"].(string)
 	if !ok || commandName == "" {
-		return nil, fmt.Errorf("command_name parameter is required")
+		return nil, fmt.Errorf("command parameter is required")
 	}
 
 	uploadURL, ok := data["upload_url"].(string)
@@ -90,9 +90,9 @@ func usercode(data map[string]any) (map[string]any, error) {
 		return nil, fmt.Errorf("access_token parameter is required")
 	}
 
-	argsInterface, exists := data["command_args"]
+	argsInterface, exists := data["args"]
 	if !exists {
-		return nil, fmt.Errorf("command_args parameter is required")
+		return nil, fmt.Errorf("args parameter is required")
 	}
 
 	var args []string
@@ -103,7 +103,7 @@ func usercode(data map[string]any) (map[string]any, error) {
 			}
 		}
 	} else {
-		return nil, fmt.Errorf("command_args must be an array")
+		return nil, fmt.Errorf("args must be an array")
 	}
 
 	tmpDir := filepath.Join(os.TempDir(), fmt.Sprintf("ai-pipe-%d", time.Now().UnixNano()))
