@@ -44,5 +44,4 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp.idea/
-rsp.json
-req.json
+requests.sh
