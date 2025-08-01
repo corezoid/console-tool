@@ -11,19 +11,40 @@ RUN apk add --no-cache --virtual .fetch-deps upx
 RUN upx -1 /app/console-tool
 
 
-FROM alpine:3.20
+FROM ubuntu:22.04
 COPY --from=builder /app/console-tool /app/console-tool
 
-RUN apk add --no-cache python3 py3-pip ffmpeg && \
-    pip3 install --no-cache-dir --break-system-packages --upgrade yt-dlp
+# Install dependencies and make it look like a regular desktop
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    ffmpeg \
+    curl \
+    wget \
+    ca-certificates \
+    xvfb \
+    firefox \
+    chromium-browser \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN addgroup --gid 501 usercode && \
-    adduser --disabled-password \
-    --gecos "" \
-    --shell /usr/sbin/nologin \
-    --ingroup usercode \
-    --uid 501 \
-    usercode
+# Install latest yt-dlp
+RUN pip3 install --no-cache-dir --upgrade yt-dlp
+
+# Create user directories that browsers expect
+RUN groupadd --gid 501 usercode && \
+    useradd --uid 501 --gid usercode --shell /bin/bash --create-home usercode
+
+# Set up browser directories
+RUN mkdir -p /home/usercode/.mozilla/firefox \
+    /home/usercode/.config/google-chrome \
+    /home/usercode/.cache \
+    && chown -R usercode:usercode /home/usercode
+
 USER usercode
+WORKDIR /home/usercode
+
+# Set environment variables to make it look more like a desktop
+ENV DISPLAY=:99
+ENV HOME=/home/usercode
 
 ENTRYPOINT ["/app/console-tool"]

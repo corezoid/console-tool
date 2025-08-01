@@ -48,7 +48,6 @@ func main() {
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	defer check_panic(w, r)
-
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		send_err(w, "", 1, err.Error())
@@ -109,6 +108,19 @@ func usercode(data map[string]any) (map[string]any, error) {
 		return nil, fmt.Errorf("failed to create temp directory: %v", err)
 	}
 	defer os.RemoveAll(tmpDir)
+
+	filesInterface, hasFiles := data["files"]
+	if hasFiles {
+		filesList, ok := filesInterface.([]interface{})
+		if !ok {
+			return nil, fmt.Errorf("files must be an array")
+		}
+
+		err = downloadFiles(filesList, tmpDir)
+		if err != nil {
+			return nil, fmt.Errorf("failed to download files: %v", err)
+		}
+	}
 
 	cmd := exec.Command(commandName, args...)
 	cmd.Dir = tmpDir
@@ -279,6 +291,50 @@ func send_err(w http.ResponseWriter, id string, code int, message string) {
 		// nolint
 		w.Write(b)
 	}
+}
+
+func downloadFiles(filesList []interface{}, tmpDir string) error {
+	for _, fileInterface := range filesList {
+		fileObj, ok := fileInterface.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("each file must be an object")
+		}
+
+		fileLink, ok := fileObj["file_link"].(string)
+		if !ok || fileLink == "" {
+			return fmt.Errorf("file_link is required for each file")
+		}
+
+		fileName, ok := fileObj["file_name"].(string)
+		if !ok || fileName == "" {
+			return fmt.Errorf("file_name is required for each file")
+		}
+
+		resp, err := http.Get(fileLink)
+		if err != nil {
+			return fmt.Errorf("failed to download file %s: %v", fileName, err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("failed to download file %s: HTTP %d", fileName, resp.StatusCode)
+		}
+
+		filePath := filepath.Join(tmpDir, fileName)
+		file, err := os.Create(filePath)
+		if err != nil {
+			return fmt.Errorf("failed to create file %s: %v", filePath, err)
+		}
+		defer file.Close()
+
+		_, err = io.Copy(file, resp.Body)
+		if err != nil {
+			return fmt.Errorf("failed to save file %s: %v", fileName, err)
+		}
+
+		fmt.Printf("Downloaded file: %s\n", fileName)
+	}
+	return nil
 }
 
 func check_panic(w http.ResponseWriter, req *http.Request) {
