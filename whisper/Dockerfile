@@ -12,10 +12,9 @@ RUN upx -1 /app/console-tool
 
 
 FROM alpine:3.20
+RUN apk add --no-cache python3 py3-pip ffmpeg
+RUN pip3 install --break-system-packages openai-whisper
 COPY --from=builder /app/console-tool /app/console-tool
-
-RUN apk add --no-cache python3 py3-pip ffmpeg && \
-    pip3 install --no-cache-dir --break-system-packages --upgrade yt-dlp
 
 RUN addgroup --gid 501 usercode && \
     adduser --disabled-password \
