@@ -125,6 +125,7 @@ func usercode(data map[string]any) (map[string]any, error) {
 
 	cmd := exec.Command(commandName, args...)
 	cmd.Dir = tmpDir
+	cmd.Env = append(os.Environ(), "XDG_CACHE_HOME="+tmpDir)
 
 	result, err := cmd.CombinedOutput()
 	if err != nil {
