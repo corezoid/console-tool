@@ -43,7 +43,10 @@ func main() {
 	mux.HandleFunc("POST /", handler)
 
 	fmt.Println("Listening on http://0.0.0.0:" + port)
-	http.ListenAndServe("0.0.0.0:"+port, mux)
+	err := http.ListenAndServe("0.0.0.0:"+port, mux)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -104,7 +107,7 @@ func usercode(data map[string]any) (map[string]any, error) {
 	}
 
 	tmpDir := filepath.Join(os.TempDir(), fmt.Sprintf("ai-pipe-%d", time.Now().UnixNano()))
-	err := os.MkdirAll(tmpDir, 0755)
+	err := os.MkdirAll(tmpDir, 0777)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp directory: %v", err)
 	}
