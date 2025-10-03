@@ -80,10 +80,7 @@ func usercode(data map[string]any) (map[string]any, error) {
 		return nil, fmt.Errorf("command parameter is required")
 	}
 
-	uploadURL, ok := data["upload_url"].(string)
-	if !ok || uploadURL == "" {
-		return nil, fmt.Errorf("upload_url parameter is required")
-	}
+	uploadURL, _ := data["upload_url"].(string)
 
 	accessToken, ok := data["access_token"].(string)
 	if !ok || accessToken == "" {
@@ -167,7 +164,7 @@ func collectFiles(tmpDir string) ([]string, error) {
 
 func uploadFiles(files []string, uploadURL, accessToken string) ([]map[string]string, error) {
 	if uploadURL == "" {
-		return nil, fmt.Errorf("upload_url parameter is required")
+		return nil, nil
 	}
 	if accessToken == "" {
 		return nil, fmt.Errorf("access_token parameter is required")
