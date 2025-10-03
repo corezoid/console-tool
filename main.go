@@ -82,10 +82,8 @@ func usercode(data map[string]any) (map[string]any, error) {
 
 	uploadURL, _ := data["upload_url"].(string)
 
-	accessToken, ok := data["access_token"].(string)
-	if !ok || accessToken == "" {
-		return nil, fmt.Errorf("access_token parameter is required")
-	}
+	accessToken, _ := data["access_token"].(string)
+
 
 	argsInterface, exists := data["args"]
 	if !exists {
